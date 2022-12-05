@@ -1,33 +1,61 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import { useState, useEffect } from 'react'
+import axios from "axios";
+import {io} from 'socket.io-client'
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 
+const socket = io.connect("http://localhost:5000")
+
+const Item = styled(Paper)(({ theme }) => ({
+  ...theme.typography.body2,
+  textAlign: 'center',
+  color: theme.palette.text.secondary,
+  lineHeight: '80px',
+}));
+
+const darkTheme = createTheme({ palette: { mode: 'dark' } });
 function App() {
-  const [count, setCount] = useState(0)
+  const [sales, setSales] = useState([])
 
+  useEffect(()=>{
+    socket.on("private_message", (data) =>{
+      console.log(sales);
+      setSales((prev) => [...prev,data])
+    })
+ 
+ },[socket])
+  
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </div>
+    <>
+     {sales.map((sale) => (   
+      <ThemeProvider theme={darkTheme}>
+      <Box
+      sx={{
+        p: 2,
+        bgcolor: 'background.default',
+        
+        display:"flex",
+        flexDirection: 'column',
+        width: '60%',
+        margin: 'auto'
+      }}
+    >
+              <Item >
+                <div>
+                  <ul style={{display:"flex", justifyContent:"space-evenly", alignItems:"center", listStyleType:"none"}}>
+                    <li>{sale.item}</li>
+                    <li>{sale.tab}</li>
+                    <li>{sale.price}</li>
+                    <li>{sale.left}</li>
+                    <li>{sale.top}</li>
+                  </ul>
+                </div>
+              </Item>
+    </Box>
+    </ThemeProvider>   
+     ))} 
+    </>
   )
 }
 
